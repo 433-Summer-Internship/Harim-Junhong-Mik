@@ -8,19 +8,18 @@ struct ChatProtocol {
 ```
   
 Command:  
--Number 0-255 which determines the command type (Example: commend = 1 for Login)  
-login 10
-logout 11
--------------------------
-MessageToServer 21
-MessageToClient 22
-JoinRoom 31
-CreateRoom 32
-LeaveRoom 33
-RoomList 40
---------------------------
-UserList 50
-heatbeat 60
+-Number 0-255 which determines the command type (Example: commend = 1 for Login)      
+
+login 10  
+logout 11  
+MessageToServer 21  
+MessageToClient 22  
+JoinRoom 31  
+CreateRoom 32  
+LeaveRoom 33  
+RoomList 40  
+UserList 50  
+heatbeat 60  
   
   
   
