@@ -9,8 +9,20 @@ struct ChatProtocol {
   
 Command:  
 -Number 0-255 which determines the command type (Example: commend = 1 for Login)  
--0 is reserved (indicates a non-assigned (default) value)  
-Login, Logout, MessageToServer, MessageToClient, GetRoomList, JoinRoom, CreateRoom, LeaveRoom, SendRoomList, HeartBeat, GetUserInfo, SendUserInfo  
+login 10
+logout 11
+-------------------------
+MessageToServer 21
+MessageToClient 22
+JoinRoom 31
+CreateRoom 32
+LeaveRoom 33
+RoomList 40
+--------------------------
+UserList 50
+heatbeat 60
+  
+  
   
 ValueA:  
 -Ushort for assigning the first relevant parameter for each command (fixed size)  
