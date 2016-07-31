@@ -6,48 +6,30 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using ChatDefine;
 
 namespace client
 {
     class client
     {
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct ChatProtocol
-        {
-            [MarshalAs(UnmanagedType.I1)]
-            public byte command;    //256 possible commands  
-
-            [MarshalAs(UnmanagedType.U2)]
-            public ushort valueA;     //unsigned short custom-value  
-
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
-            public byte[] valueB;     //Variable sized value  
-        }
-
+        
         static void Main(string[] args)
         {
-            IPAddress serip = IPAddress.Parse("10.100.58.2");
+            IPAddress serip = IPAddress.Parse("127.0.0.1");
             IPEndPoint serep = new IPEndPoint(serip, 50001);
 
+            Console.WriteLine("Create Socket");
             Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            Console.WriteLine("소켓생성");
+            
 
             sock.Connect(serep);
-            Console.WriteLine("Connect to "+ sock.RemoteEndPoint);
+            Console.WriteLine("Connect to Server : " + sock.RemoteEndPoint);
 
             while (true)
             {
-                //string input = Console.ReadLine();
-                //byte[] data = Encoding.UTF8.GetBytes(input);
+                //Get message from console
 
-                //Room ro1 = new Room();
-                //ro1.CreateRoom(110, null);
-                //byte[] data = StructureToByte(ro1);
-
-                string inputMsg;
                 byte[] message = new byte[1024];    //max message size
-
-                inputMsg = Console.ReadLine();
 
                 if (inputMsg.CompareTo("exit") == 0)
                 {
@@ -56,26 +38,130 @@ namespace client
 
                 Array.Copy(Encoding.UTF8.GetBytes(inputMsg), message, Encoding.UTF8.GetBytes(inputMsg).Length);
 
+
+                //Send message to Server
                 ChatProtocol CP = new ChatProtocol();
                 CP.command = 0;
                 CP.valueA = 10;
                 CP.valueB = message;
 
+               
 
-                byte[] data = StructureToByte(CP);
-                
-                Console.WriteLine("Before Send");
-                sock.Send(data, 0, data.Length, SocketFlags.None);
-                Console.WriteLine("After Send");
-                
+                //Receive from Server
                 byte[] rcvBuff = new byte[1024];
                 int rcvByteNum = 0;
-                rcvByteNum = sock.Receive(rcvBuff, SocketFlags.None);
-                Console.WriteLine("From server : " + Encoding.UTF8.GetString(rcvBuff, 0, rcvByteNum));
+                //rcvByteNum = sock.Receive(rcvBuff, SocketFlags.None);
+                //Console.WriteLine("From server : " + Encoding.UTF8.GetString(rcvBuff, 0, rcvByteNum));
             }
 
             sock.Close();
+        }//main ends
+
+        public string Input() {
+
+            string inputMsg;
+
+            inputMsg = Console.ReadLine();
+
+            return inputMsg;
         }
+
+        public void GetCommandInLobby() {
+
+            string input = Input().ToUpper();
+
+            switch (input)
+            {
+                case "LIST" :
+                    break;
+
+                case "CREATE":
+                    break;
+
+                case "LOGIN":
+                    break;
+
+                case "LOGOUT":
+                    break;
+
+                case "JOIN":
+                    break;
+
+                case "LEAVE":
+                    break;
+
+            }
+        }
+
+
+        public void GetCommandInRoom()
+        {
+            string input = Input().ToUpper();
+
+            switch (input)
+            {
+
+                case "LEAVE":
+                    break;
+
+            }
+        }
+
+        public void GetCommandInLogIN()
+        {
+            string input = Input().ToUpper();
+
+            switch (input)
+            {
+
+                case "LOGIN" :
+                    break;
+
+                case "EXIT":
+                    break;
+
+            }
+
+        }
+
+
+        public void SendPacket(ChatProtocol CP, Socket s) {
+
+            byte[] data = StructureToByte(CP);
+
+            s.Send(data, 0, data.Length, SocketFlags.None);
+        }
+        
+        
+
+        public void LogIInUI() {
+
+            Console.WriteLine("==========================================================");
+            Console.WriteLine("================Welcome to the POCKETCHAT!!===============");
+            Console.WriteLine("==========================================================");
+            Console.WriteLine("==========================LogIn===========================");
+            Console.WriteLine("Enter your ID and PW");
+        }
+
+
+    
+        public void MainUI() {
+
+            Console.WriteLine("==========================================================");
+            Console.WriteLine("=====================POCKETCHAT ver1.0====================");
+            Console.WriteLine("==========================================================");
+            Console.WriteLine("===========LIST===========CREATE==========LOGOUT==========");
+        }
+
+
+
+        public void MessageToserver(Socket s)
+        {
+            
+        }
+
+
+
         public static byte[] StructureToByte(object obj)
         {
             int datasize = Marshal.SizeOf(obj);//((PACKET_DATA)obj).TotalBytes; // 구조체에 할당된 메모리의 크기를 구한다.
@@ -85,75 +171,6 @@ namespace client
             Marshal.Copy(buff, data, 0, datasize); // 구조체 객체를 배열에 복사
             Marshal.FreeHGlobal(buff); // 비관리 메모리 영역에 할당했던 메모리를 해제함
             return data; // 배열을 리턴
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    class Room
-    {
-        [MarshalAs(UnmanagedType.U2)]
-        ushort number;                                                   //방번호
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
-        Client[] roomMember = new Client[5];   //맴버
-
-
-        public void CreateRoom(int num, Client first)              //방 번호 초기화, 방장(첫입장)
-        {
-            number = (ushort)num;
-            roomMember[0] = first;
-        }
-
-        public void leaveRoom()
-        {
-        }
-
-        public int joinRoom()
-        {
-            return -1;
-        }
-        public ushort Getnumber()
-        {
-            return number;
-        }
-
-    }
-    [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    class Client
-    {
-        [MarshalAs(UnmanagedType.I4)]
-        Socket socket;
-        [MarshalAs(UnmanagedType.I4)]
-        int msgcount;
-        public Client(Socket s)
-        {
-            socket = s;
-        }
-
-        public Socket GetSocket()
-        {
-            return socket;
         }
     }
 }
