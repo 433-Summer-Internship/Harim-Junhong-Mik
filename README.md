@@ -47,7 +47,7 @@ ValueB:
 Login – Username+Password (fixed length)  
 Logout – Username (fixed length)  
 LoginResult - 1 (success)  
-	     -1 (fail)  
+LoginResult - -1 (fail)   
 MessageToServer – Message (Length = ValueA)  
 MessageToClient – Message (Length = ValueA)  
 GetRoomList – 0 (fixed length – 1 byte)  
