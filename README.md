@@ -11,7 +11,7 @@ Command:
 -Number 0-255 which determines the command type (Example: commend = 1 for Login)      
 
 login           10  
-logout          11
+logout          11  
 loginResult     12    
 MessageToServer 21  
 MessageToClient 22  
