@@ -12,7 +12,7 @@ Command:
 
 login           10  
 logout          11
-loginResult     12  
+loginResult     12    
 MessageToServer 21  
 MessageToClient 22  
 JoinRoom        31  
