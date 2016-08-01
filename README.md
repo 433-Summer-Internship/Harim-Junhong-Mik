@@ -28,8 +28,9 @@ Login format = ID#PW
   
 ValueA:  
 -Ushort for assigning the first relevant parameter for each command (fixed size)  
-Login – 0  
+Login – ID#PW Length  
 Logout – 0  
+LoginResult - 1
 MessageToServer – Message Length  
 MessageToClient – Message Length  
 GetRoomList – 0  
@@ -45,6 +46,8 @@ ValueB:
 -Variable (up to maximum value) OR fixed length parameter  
 Login – Username+Password (fixed length)  
 Logout – Username (fixed length)  
+LoginResult - 1 (success)
+	     -1 (fail)
 MessageToServer – Message (Length = ValueA)  
 MessageToClient – Message (Length = ValueA)  
 GetRoomList – 0 (fixed length – 1 byte)  
