@@ -22,7 +22,7 @@ snedRommList    41
 UserList        50  
 heatbeat        60  
 
-  
+Login format = ID#PW  
   
   
 ValueA:  
