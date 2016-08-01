@@ -11,7 +11,7 @@ Command:
 -Number 0-255 which determines the command type (Example: commend = 1 for Login)      
 
 login           10  
-logout          11
+logout          11  
 loginResult     12  
 MessageToServer 21  
 MessageToClient 22  
@@ -46,8 +46,8 @@ ValueB:
 -Variable (up to maximum value) OR fixed length parameter  
 Login – Username+Password (fixed length)  
 Logout – Username (fixed length)  
-LoginResult - 1 (success)
-	     -1 (fail)
+LoginResult - 1 (success)  
+	     -1 (fail)  
 MessageToServer – Message (Length = ValueA)  
 MessageToClient – Message (Length = ValueA)  
 GetRoomList – 0 (fixed length – 1 byte)  
