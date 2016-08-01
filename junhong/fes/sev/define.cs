@@ -19,7 +19,7 @@ namespace def
         [MarshalAs(UnmanagedType.U2)]
         public ushort valueA;     //unsigned short custom-value  
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1024)]
         public byte[] valueB;     //Variable sized value  
     }
 
@@ -67,13 +67,13 @@ namespace def
         int msgcount;
         public Client(Socket s)
         {
-            //socket = s;
+            socket = s;
         }
 
-        //public Socket GetSocket()
-        //{
-            //return socket;
-        //}
+        public Socket GetSocket()
+        {
+            return socket;
+        }
     }
 
     static class Constants
