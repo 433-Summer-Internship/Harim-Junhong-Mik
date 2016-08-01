@@ -18,8 +18,10 @@ JoinRoom        31
 CreateRoom      32  
 LeaveRoom       33  
 RoomList        40  
+snedRommList    41  
 UserList        50  
 heatbeat        60  
+
   
   
   
