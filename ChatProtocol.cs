@@ -112,7 +112,7 @@ namespace ChatProtocolController
             Marshal.Copy(receivedData, 0, buff, receivedData.Length);                               
             object packet = Marshal.PtrToStructure(buff, typeof(ChatProtocol));                    
             Marshal.FreeHGlobal(buff);                                                             
-            receivedPacket = (ChatProtocol)packet;
+            
 
             //Check for a problem in the data length
             if (Marshal.SizeOf(packet) != receivedData.Length)                              
@@ -120,6 +120,7 @@ namespace ChatProtocolController
                 return false;                                       //Return False on a Data Length Error                                          
             }
 
+            receivedPacket = (ChatProtocol)packet;
             return true;                                            //Return True on success                                                   
         }
     }
