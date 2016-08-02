@@ -119,8 +119,8 @@ namespace ChatProtocolController
             {
                 return false;                                       //Return False on a Data Length Error                                          
             }
-
-            receivedPacket = (ChatProtocol)packet;
+            receivedPacket = (ChatProtocol)packet;                  //If no errors, cast the data into our ChatProtocol struct
+            
             return true;                                            //Return True on success                                                   
         }
     }
