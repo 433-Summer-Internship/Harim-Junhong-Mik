@@ -24,7 +24,8 @@ heatbeat        60
 reponse +100  
 
 Login format = ID#PW  
-  
+
+Maximum Message Size = 1010 byte
   
 ValueA:  
 -Ushort for assigning the first relevant parameter for each command (fixed size)  
