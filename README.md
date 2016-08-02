@@ -12,7 +12,6 @@ Command:
 
 login           10  
 logout          11  
-loginResult     12  
 MessageToServer 21  
 MessageToClient 22  
 JoinRoom        31  
@@ -21,7 +20,8 @@ LeaveRoom       33
 RoomList        40  
 sendRoomList    41  
 UserList        50  
-heatbeat        60  
+heatbeat        60   
+reponse +100  
 
 Login format = ID#PW  
   
