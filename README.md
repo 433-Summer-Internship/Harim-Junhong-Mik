@@ -35,7 +35,7 @@ MessageToServer – Message Length
 MessageToClient – Message Length  
 GetRoomList – 0  
 JoinRoom – Room Number  
-CreateRoom – Room Number  
+CreateRoom – Room Name Length  
 LeaveRoom – 0  
 SendRoomList – Number of Rooms  
 HeartBeat – 0  
@@ -50,6 +50,7 @@ LoginResult - 1 (success)
 LoginResult - -1 (fail)   
 MessageToServer – Message (Length = ValueA)  
 MessageToClient – Message (Length = ValueA)  
+GetRoom - Room Name (Length = ValueA)  
 GetRoomList – 0 (fixed length – 1 byte)  
 JoinRoom – 0 (fixed length – 1 byte)  
 CreateRoom – 0 (fixed length – 1 byte)  
