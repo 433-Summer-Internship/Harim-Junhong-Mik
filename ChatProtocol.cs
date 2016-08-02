@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace ChatProtocol
+namespace ChatProtocolController
 {
     /// <summary>
     /// The ChatProtocol struct defines the general structure of the various message types we send in our chat program 
