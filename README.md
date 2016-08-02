@@ -36,7 +36,7 @@ MessageToServer – Message Length
 MessageToClient – Message Length  
 GetRoomList – 0  
 JoinRoom – Room Number  
-CreateRoom – Room Name Length  
+CreateRoom – Room Name Length    
 LeaveRoom – 0  
 SendRoomList – Number of Rooms  
 HeartBeat – 0  
