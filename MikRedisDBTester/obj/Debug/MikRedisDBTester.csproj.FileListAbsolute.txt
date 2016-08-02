@@ -1,0 +1,11 @@
+c:\users\mikm\documents\visual studio 2015\Projects\MikRedisDB\MikRedisDBTester\bin\Debug\MikRedisDBTester.exe.config
+c:\users\mikm\documents\visual studio 2015\Projects\MikRedisDB\MikRedisDBTester\bin\Debug\MikRedisDBTester.exe
+c:\users\mikm\documents\visual studio 2015\Projects\MikRedisDB\MikRedisDBTester\bin\Debug\MikRedisDBTester.pdb
+c:\users\mikm\documents\visual studio 2015\Projects\MikRedisDB\MikRedisDBTester\bin\Debug\MikRedisDB.dll
+c:\users\mikm\documents\visual studio 2015\Projects\MikRedisDB\MikRedisDBTester\bin\Debug\StackExchange.Redis.dll
+c:\users\mikm\documents\visual studio 2015\Projects\MikRedisDB\MikRedisDBTester\bin\Debug\MikRedisDB.pdb
+c:\users\mikm\documents\visual studio 2015\Projects\MikRedisDB\MikRedisDBTester\bin\Debug\StackExchange.Redis.pdb
+c:\users\mikm\documents\visual studio 2015\Projects\MikRedisDB\MikRedisDBTester\bin\Debug\StackExchange.Redis.xml
+c:\users\mikm\documents\visual studio 2015\Projects\MikRedisDB\MikRedisDBTester\obj\Debug\MikRedisDBTester.csprojResolveAssemblyReference.cache
+c:\users\mikm\documents\visual studio 2015\Projects\MikRedisDB\MikRedisDBTester\obj\Debug\MikRedisDBTester.exe
+c:\users\mikm\documents\visual studio 2015\Projects\MikRedisDB\MikRedisDBTester\obj\Debug\MikRedisDBTester.pdb

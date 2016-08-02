@@ -1,0 +1,8 @@
+C:\Users\mikm\Documents\Visual Studio 2015\Projects\MikRedisDB\MikRedisDB\bin\Release\MikRedisDB.dll
+C:\Users\mikm\Documents\Visual Studio 2015\Projects\MikRedisDB\MikRedisDB\bin\Release\MikRedisDB.pdb
+C:\Users\mikm\Documents\Visual Studio 2015\Projects\MikRedisDB\MikRedisDB\bin\Release\StackExchange.Redis.dll
+C:\Users\mikm\Documents\Visual Studio 2015\Projects\MikRedisDB\MikRedisDB\bin\Release\StackExchange.Redis.pdb
+C:\Users\mikm\Documents\Visual Studio 2015\Projects\MikRedisDB\MikRedisDB\bin\Release\StackExchange.Redis.xml
+C:\Users\mikm\Documents\Visual Studio 2015\Projects\MikRedisDB\MikRedisDB\obj\Release\MikRedisDB.dll
+C:\Users\mikm\Documents\Visual Studio 2015\Projects\MikRedisDB\MikRedisDB\obj\Release\MikRedisDB.pdb
+C:\Users\mikm\Documents\Visual Studio 2015\Projects\MikRedisDB\MikRedisDB\obj\Release\MikRedisDB.csprojResolveAssemblyReference.cache
