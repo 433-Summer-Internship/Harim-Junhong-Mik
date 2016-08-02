@@ -55,6 +55,7 @@ GetRoom - Room Name (Length = ValueA)
 GetRoomList – 0 (fixed length – 1 byte)  
 JoinRoom – 0 (fixed length – 1 byte)  
 CreateRoom – 0 (fixed length – 1 byte)  
+CreateRoomResult - Room Number
 LeaveRoom – 0 (fixed length – 1 byte)  
 SendRoomList – Room Data (Length = ValueA * factor)  
 HeartBeat – 0 (fixed length – 1 byte)  
