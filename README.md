@@ -25,7 +25,7 @@ reponse +100
 
 Login format = ID#PW  
 
-Maximum Message Size = 1010 byte
+Maximum Message Size = 1010 bytes
   
 ValueA:  
 -Ushort for assigning the first relevant parameter for each command (fixed size)  
