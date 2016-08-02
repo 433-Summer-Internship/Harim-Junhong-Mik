@@ -16,10 +16,10 @@ namespace ChatDefine
         public byte command;    //256 possible commands  
 
         [MarshalAs(UnmanagedType.U2)]
-        public ushort valueA;     //unsigned short custom-value  
+        public ushort valueA;   //unsigned short custom-value  
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1024)]
-        public byte[] valueB;     //Variable sized value  
+        public byte[] valueB;   //Variable sized value  
     }
 
 
