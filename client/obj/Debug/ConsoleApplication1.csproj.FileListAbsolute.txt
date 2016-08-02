@@ -4,3 +4,10 @@ C:\Users\tardised\Documents\Visual Studio 2015\Projects\ConsoleApplication1\Cons
 C:\Users\tardised\Documents\Visual Studio 2015\Projects\ConsoleApplication1\ConsoleApplication1\obj\Debug\ConsoleApplication1.csprojResolveAssemblyReference.cache
 C:\Users\tardised\Documents\Visual Studio 2015\Projects\ConsoleApplication1\ConsoleApplication1\obj\Debug\ConsoleApplication1.exe
 C:\Users\tardised\Documents\Visual Studio 2015\Projects\ConsoleApplication1\ConsoleApplication1\obj\Debug\ConsoleApplication1.pdb
+C:\Users\tardised\Documents\Visual Studio 2015\Projects\ConsoleApplication1\Harim-Junhong-Mik\client\bin\Debug\ConsoleApplication1.exe.config
+C:\Users\tardised\Documents\Visual Studio 2015\Projects\ConsoleApplication1\Harim-Junhong-Mik\client\obj\Debug\ConsoleApplication1.exe
+C:\Users\tardised\Documents\Visual Studio 2015\Projects\ConsoleApplication1\Harim-Junhong-Mik\client\obj\Debug\ConsoleApplication1.pdb
+C:\Users\tardised\Documents\Visual Studio 2015\Projects\ConsoleApplication1\Harim-Junhong-Mik\client\bin\Debug\ConsoleApplication1.exe
+C:\Users\tardised\Documents\Visual Studio 2015\Projects\ConsoleApplication1\Harim-Junhong-Mik\client\bin\Debug\ConsoleApplication1.pdb
+C:\Users\tardised\Documents\Visual Studio 2015\Projects\ConsoleApplication1\Harim-Junhong-Mik\client\obj\Debug\ConsoleApplication1.csprojResolveAssemblyReference.cache
+C:\Users\tardised\Documents\Visual Studio 2015\Projects\ConsoleApplication1\Harim-Junhong-Mik\client\bin\Debug\ChatProtocol.dll

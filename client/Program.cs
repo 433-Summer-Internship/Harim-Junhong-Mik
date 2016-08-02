@@ -8,7 +8,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.IO;
-using ChatDefine;
+using ChatProtocolController;
+
 
 
 
@@ -18,49 +19,105 @@ namespace client
     {
         static void Main(string[] args)
         {
+            //connect to server
             Socket clientSocket = ConnectToServer();
-
-
-            while (true)
+            
+            while(true)
             {
-
-                //FirstPage
-                FirstPageUI();
-
-                string command = Console.ReadLine().ToUpper();
-                //FirstPage ENd
-
-                //Login Page Start
-                if (command == "LOGIN") {
-
+                //default state
+                FirstUI();
+                
+                string command = GetCommand();
+                //login state
+                if (command.Equals("LOGIN"))
+                {
+                    //try login
                     LogIn(clientSocket);
 
-                    //try login
                     bool loginResult = LogInAccept(clientSocket);
 
                     if (loginResult)
                     {
-                        //LobbyPage();
-                        break;
+                        string lobbyCommand = "";
+                        
+                        //login success
+                        do
+                        {
+                            //lobby state
+                            LobbyUI();
+
+                            lobbyCommand = GetCommand();
+
+                            switch (lobbyCommand)
+                            {
+                                case "LIST":
+                                    //ShowList();
+                                    //JoinRoom();
+                                    break;
+
+                                case "JOIN":
+
+                                    int roomNum = Convert.ToInt32(Console.ReadLine());
+                                    JoinRoom(roomNum, clientSocket);
+                                    break;
+
+                                case "CREATE":
+
+                                    int roomNumber = CreateRoom(clientSocket);
+
+                                    if (roomNumber == -1)
+                                    {
+                                        Console.WriteLine("Can not create new room");
+                                    }
+                                    else
+                                    {
+                                       
+                                       // JoinRoom(roomNumber, clientSocket);
+                                    }
+
+                                    break;
+
+                                case "LOGOUT":
+                                    //LogOut();
+                                    //logout success
+
+                                    Console.WriteLine("Logout");
+                                    break;
+
+                                default :
+                                    Console.WriteLine("Invalid Command");
+                                    break;
+                            }
+                        } while (!lobbyCommand.Equals("LOGOUT"));
                     }
                     else
                     {
                         continue;
                     }
-  
-                }else if(command == "EXIT") {    
+
+                }
+                else if (command.Equals("EXIT"))
+                {
                     clientSocket.Close();
                     break;
                 }
-
-                //Login Page End
-            }
-
-
-
+                else
+                {
+                    Console.WriteLine("Invalid Command");
+                }
+                //Login State End
+            } //While End
         }//main ends
 
-        public static void FirstPageUI()
+
+        public static string GetCommand()
+        {
+            string command = Console.ReadLine().ToUpper();
+            return command;
+        }
+
+
+        public static void FirstUI()
         {
             Console.WriteLine("==========================================================");
             Console.WriteLine("================Welcome to the POCKETCHAT!!===============");
@@ -76,31 +133,27 @@ namespace client
             string pw = "";
             int idMaxSize = 12;
 
-            Console.WriteLine("==========================================================");
-            Console.WriteLine("==================Welcome to POCKETCHAT!!=================");
-            Console.WriteLine("==========================================================");
-
+            //Get correct login info
             do
             {
-                Console.WriteLine("Enter your ID : ");
+                Console.Write("Enter your ID : ");
                 id = Console.ReadLine();
             }
             while (!IsValidID(id, idMaxSize));
 
             do
             {
-                Console.WriteLine("Enter your PW : ");
+                Console.Write("Enter your PW : ");
                 pw = Console.ReadLine();
             }
             while (!IsValidPW(pw, idMaxSize));
 
-
+            //Send login info to server
             string loginInfo = id + "#" + pw;
-            Console.WriteLine("before");
-            byte[] loginData = CreatePacket(10, Convert.ToUInt16(loginInfo.Length), loginInfo);
-            Console.WriteLine("after");
+            
+            byte[] loginData = PacketMaker.CreatePacket(PacketMaker.CommandCode.LOGIN, Convert.ToUInt16(loginInfo.Length), StringToByte(loginInfo));
+            
             ClientToServer(s, loginData);
-
         }
 
         public static bool LogInAccept(Socket s)
@@ -108,27 +161,28 @@ namespace client
 
             ChatProtocol result = ServerToClient(s);
 
-            if (result.command == 12)
+            if (result.command == PacketMaker.CommandCode.LOGIN_RESULT)
             {
-                if (BitConverter.ToInt32(result.valueB, 0) == 1)
+                if (BitConverter.ToInt32(result.variableLengthField, 0) == 1)
                 {
                     Console.WriteLine("Welcome!");
                     return true;
                 }
-                else if (BitConverter.ToInt32(result.valueB, 0) == -1)
+                else if (BitConverter.ToInt32(result.variableLengthField, 0) == -1)
                 {
                     Console.WriteLine("LogIn Failed");
                     return false;
                 }
                 else
                 {
-                    Console.WriteLine("오류가 발생하였습니다.");
+                    Console.WriteLine(BitConverter.ToInt32(result.variableLengthField, 0));
+                    Console.WriteLine("valueB error.");
                     return false;
                 }
             }
             else
             {
-                Console.WriteLine("오류가 발생하였습니다.");
+                Console.WriteLine("command error.");
                 return false;
             }
         }
@@ -173,12 +227,77 @@ namespace client
             return true;
         }
 
-        public static void MainUI()
+        public static void LobbyUI()
         {
             Console.WriteLine("==========================================================");
-            Console.WriteLine("====================POCKETCHAT ver.BETA===================");
+            Console.WriteLine("==================POCKETCHAT BETA ver.1.0=================");
             Console.WriteLine("==========================================================");
-            Console.WriteLine("===========LIST===========CREATE==========LOGOUT==========");
+            Console.WriteLine("========LIST========JOIN=======CREATE========LOGOUT=======");
+        }
+
+        public static void JoinRoom(int roomNum, Socket s)
+        {
+            byte[] joinRoomRequest 
+                = PacketMaker.CreatePacket(PacketMaker.CommandCode.JOIN_ROOM, Convert.ToUInt16(roomNum), StringToByte("0"));
+
+            ClientToServer(s, joinRoomRequest);
+            ChatProtocol joinResult = ServerToClient(s);
+
+            if (joinResult.command == PacketMaker.CommandCode.JOIN_ROOM_RESULT)
+            {
+                if (BitConverter.ToInt32(joinResult.variableLengthField, 0) == 1)
+                {
+                    Console.WriteLine("Join to Room # : " + joinResult.variableLengthField);
+                    Chat();
+                }
+                else if (BitConverter.ToInt32(joinResult.variableLengthField, 0) == -1)
+                {
+                    Console.WriteLine("Join Room Failed");
+                }
+            }else {
+                Console.WriteLine("Invaild Message from Server");
+            }
+                
+        }
+
+        public static int CreateRoom(Socket s)
+        {
+            int roomNumber = -1;
+            int maxRoomNameLength = 60;
+            string roomName;
+
+            do
+            {
+                Console.WriteLine("Enter Room Name");
+                roomName = Console.ReadLine();
+
+                if (roomName.Length > maxRoomNameLength)
+                {
+                    Console.WriteLine("방 이름이 너무 길어양");
+                }
+            } while (roomName.Length > maxRoomNameLength);
+
+            ushort roomNameLength = Convert.ToUInt16(roomName.Length);
+            byte[] newRoomRequest =  PacketMaker.CreatePacket(PacketMaker.CommandCode.CREATE_ROOM, roomNameLength, StringToByte(roomName));
+            ClientToServer(s, newRoomRequest);
+
+            ChatProtocol newRoom = ServerToClient(s);
+
+            if (newRoom.command == PacketMaker.CommandCode.CREATE_ROOM_RESULT)
+            {
+                roomNumber = newRoom.fixedLengthField;
+            }else
+            {
+                Console.WriteLine("command error");
+            }
+
+            return roomNumber;
+        }
+
+
+        public static void Chat()
+        {
+            Console.ReadLine();
         }
 
         public static Socket ConnectToServer()
@@ -188,7 +307,7 @@ namespace client
             IPEndPoint serep = new IPEndPoint(serip, 50001);
 
             Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            Console.WriteLine("소켓생성");
+            Console.WriteLine("Create Socket");
 
             sock.Connect(serep);
             Console.WriteLine("Connect to Server : " + sock.RemoteEndPoint);
@@ -197,30 +316,11 @@ namespace client
         }
 
 
-
-
-        /* public static void GetCommand(string cmd)
-         {
-             switch ()
-             {
-
-             }
-         }*/
-
-
-        public static byte[] CreatePacket(byte cmd, ushort vA, string msg)
+        public static byte[] StringToByte(string str)
         {
             byte[] message = new byte[1024];    //max message size
-            Array.Copy(Encoding.UTF8.GetBytes(msg), message, Encoding.UTF8.GetBytes(msg).Length);
-
-            ChatProtocol CP = new ChatProtocol();
-            CP.command = cmd;
-            CP.valueA = vA;
-            CP.valueB = message;
-
-            byte[] data = StructureToByte(CP);
-
-            return data;
+            Array.Copy(Encoding.UTF8.GetBytes(str), message, Encoding.UTF8.GetBytes(str).Length);
+            return message;
         }
 
 
@@ -234,19 +334,19 @@ namespace client
 
         public static ChatProtocol ServerToClient(Socket s)
         {
-
+            ChatProtocol pt;
             byte[] data = new byte[Marshal.SizeOf(typeof(ChatProtocol))];
 
+            Console.WriteLine("rcv ready");
             s.Receive(data, data.Length, SocketFlags.None);
+            Console.WriteLine("rcv end");
 
-            ChatProtocol pt = (ChatProtocol)ByteToStructure(data, typeof(ChatProtocol));
+            if(!PacketMaker.TryDePacket(data, out pt))
+            {
+                Console.WriteLine("DePacket Error!");
+            }
+
             return pt;
-
-            /*
-            byte[] rcvBuff = new byte[1024];
-            int rcvByteNum = 0;
-            rcvByteNum = s.Receive(rcvBuff, SocketFlags.None);
-            Console.WriteLine("From server : " + Encoding.UTF8.GetString(rcvBuff, 0, rcvByteNum));*/
         }
 
 
@@ -257,36 +357,6 @@ namespace client
             Random rand = new Random();
             return lines[rand.Next(lines.Length)];
         }
-
-
-
-        public static byte[] StructureToByte(object obj)
-        {
-            int datasize = Marshal.SizeOf(obj);//((PACKET_DATA)obj).TotalBytes; // 구조체에 할당된 메모리의 크기를 구한다.
-            IntPtr buff = Marshal.AllocHGlobal(datasize); // 비관리 메모리 영역에 구조체 크기만큼의 메모리를 할당한다.
-            Marshal.StructureToPtr(obj, buff, false); // 할당된 구조체 객체의 주소를 구한다.
-            byte[] data = new byte[datasize]; // 구조체가 복사될 배열
-            Marshal.Copy(buff, data, 0, datasize); // 구조체 객체를 배열에 복사
-            Marshal.FreeHGlobal(buff); // 비관리 메모리 영역에 할당했던 메모리를 해제함
-            return data; // 배열을 리턴
-        }
-
-
-        public static object ByteToStructure(byte[] data, Type type)
-        {
-            IntPtr buff = Marshal.AllocHGlobal(data.Length); // 배열의 크기만큼 비관리 메모리 영역에 메모리를 할당한다.
-            Marshal.Copy(data, 0, buff, data.Length); // 배열에 저장된 데이터를 위에서 할당한 메모리 영역에 복사한다.
-            object obj = Marshal.PtrToStructure(buff, type); // 복사된 데이터를 구조체 객체로 변환한다.
-            Marshal.FreeHGlobal(buff); // 비관리 메모리 영역에 할당했던 메모리를 해제함
-
-
-            if (Marshal.SizeOf(obj) != data.Length)// (((PACKET_DATA)obj).TotalBytes != data.Length) // 구조체와 원래의 데이터의 크기 비교
-            {
-                return null; // 크기가 다르면 null 리턴
-            }
-            return obj; // 구조체 리턴
-        }
-
     }
 
 }
