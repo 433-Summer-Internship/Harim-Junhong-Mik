@@ -113,7 +113,6 @@ namespace ChatProtocolController
             object packet = Marshal.PtrToStructure(buff, typeof(ChatProtocol));                    
             Marshal.FreeHGlobal(buff);                                                             
             
-
             //Check for a problem in the data length
             if (Marshal.SizeOf(packet) != receivedData.Length)                              
             {
