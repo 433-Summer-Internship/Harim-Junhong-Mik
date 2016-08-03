@@ -1,4 +1,6 @@
-# Harim-Junhong-Mik
+# Harim-Junhong-Mik (Team PocketChat)
+
+PocketChat Application Protocol Summary:
 ```
 struct ChatProtocol {  
 	byte 		command;	//256 possible commands  
