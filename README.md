@@ -62,9 +62,9 @@ HeartBeat – 0 (fixed length – 1 byte)
 GetUserInfo – 0 (fixed length – 1 byte)  
 SendUserInfo – Number of Real Users (fixed length)  
 
-Code:
-Client: 
-FE Server: 
-Redis Client: https://github.com/Mukikaizoku/MikRedisDB-for-Pocketchat-App 
+Code:  
+Client:   
+FE Server:   
+Redis Client: https://github.com/Mukikaizoku/MikRedisDB-for-Pocketchat-App   
 
 
