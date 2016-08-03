@@ -66,5 +66,6 @@ Code:
 Client:   
 FE Server:   
 Redis Client: https://github.com/Mukikaizoku/MikRedisDB-for-Pocketchat-App   
+Admin (Monitor) Client: https://github.com/Mukikaizoku/PocketChat-Admin-Client
 
 
