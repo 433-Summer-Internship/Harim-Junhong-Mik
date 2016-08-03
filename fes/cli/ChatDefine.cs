@@ -7,23 +7,22 @@ using System.Runtime.InteropServices;
 using System.Net;
 using System.Net.Sockets;
 
-namespace def
+namespace ChatDefine
 {
-    [Serializable]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct ChatProtocol
+    struct ChatProtocol
     {
-        [MarshalAs(UnmanagedType.U1)]
+        [MarshalAs(UnmanagedType.I1)]
         public byte command;    //256 possible commands  
 
         [MarshalAs(UnmanagedType.U2)]
         public ushort valueA;     //unsigned short custom-value  
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1024)]
         public byte[] valueB;     //Variable sized value  
     }
 
-    //public const ushort maximumRoomMember = 5;
+
 
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -57,28 +56,23 @@ namespace def
 
     }
 
+
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     class Client
     {
-        //[MarshalAs(UnmanagedType.I4)]
+        [MarshalAs(UnmanagedType.I4)]
         Socket socket;
-        //[MarshalAs(UnmanagedType.I4)]
+        [MarshalAs(UnmanagedType.I4)]
         int msgcount;
         public Client(Socket s)
         {
-            //socket = s;
+            socket = s;
         }
 
-        //public Socket GetSocket()
-        //{
-            //return socket;
-        //}
+        public Socket GetSocket()
+        {
+            return socket;
+        }
     }
-
-    static class Constants
-    {
-        public const ushort maximumRoomMember = 5;
-    }
-
 }
