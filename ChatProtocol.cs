@@ -67,10 +67,11 @@ namespace ChatProtocolController
             
             //Connection health commands
             public const byte HEARTBEAT =                   60;
-            
+            public const byte HEARTBEAT_RESULT =            160;
+
             //Connection Passing commands
-            public const byte CONNECTIOINPASSING_REQUEST    70;
-            public const byte CONNECTIOINPASSING_RESULT     170;
+            public const byte CONNECTIOINPASSING_REQUEST =  70;
+            public const byte CONNECTIOINPASSING_RESULT =   170;
         }
 
         /// <summary>
