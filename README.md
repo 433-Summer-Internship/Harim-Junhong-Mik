@@ -51,12 +51,12 @@ SendUserInfo – Number of Users
 <b>variableLengthField:</b>  
 A variable length byte field with a maximum size of 1024 bytes. This portion of the protocol allows for messages to be sent of various sizes or secondary small data for smaller-sized commands such as login/logout commands. Some commands use just 1 byte to keep overhead for the common protocol at a minimum. Some details are outlined below:
 
-Login – Username+Password (fixed length)  Login format = ID#PW
-Logout – Username (fixed length)  
-LoginResult - 1 (success)  
+Login – Username+Password (fixed length)  Login format = ID#PW  
+Logout – Username (fixed length)   
+LoginResult - 1 (success)   
 LoginResult - -1 (fail)   
 MessageToServer – Message (Length = fixedLengthField, up to 1010 bytes)  
-MessageToClient – Message (Length = fixedLengthField, up to 1024 bytes - includes username)  
+MessageToClient – Message (Length = fixedLengthField, up to 1024 bytes - includes username)    
 GetRoom - Room Name (Length = fixedLengthField)  
 GetRoomList – 0 (fixed length – 1 byte)  
 JoinRoom – 0 (fixed length – 1 byte)  
@@ -70,8 +70,8 @@ SendUserInfo – Number of Real Users (fixed length)
 
 <b>Code</b>:  
 Source code, dll, and exe files can be found at various locations:  
-Client:   
-FE Server:   
+Client: https://github.com/433-Summer-Internship/Harim-Junhong-Mik/tree/master/client    
+FE Server: https://github.com/433-Summer-Internship/Harim-Junhong-Mik/tree/master/fes   
 Redis Client: https://github.com/Mukikaizoku/MikRedisDB-for-Pocketchat-App   
 Admin (Monitor) Client: https://github.com/Mukikaizoku/PocketChat-Admin-Client
 
