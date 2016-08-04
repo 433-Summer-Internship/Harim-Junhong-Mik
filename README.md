@@ -7,9 +7,9 @@
 Our strategy for our chat protocol was to use a simple generalized format, which would allow for facile and convenient expandability. Below is the strut that defines our protocol.  
 ```
 struct ChatProtocol {  
-	byte 		command;		//256 possible commands  
-	ushort		fixedLengthField;	//unsigned short custom-value  
-	byte[]		variableLengthField;	//Variable sized value  
+	byte 		command;			//256 possible commands  
+	ushort		fixedLengthField;		//unsigned short custom-value  
+	byte[]		variableLengthField;		//Variable sized value  
 }  
 ```
   
