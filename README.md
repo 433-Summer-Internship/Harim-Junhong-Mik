@@ -1,6 +1,9 @@
 # Harim-Junhong-Mik (Team PocketChat)
 
-PocketChat Application Protocol Summary:
+<b>PocketChat Application</b> - A Console based chatting application that includes live chat rooms, message rankings, and multiple server support. Below is a summary of the client to server protocol design. The user and room information databases are maintaned by a Redis server run on Centos 7. The database is accessed by the servers and an admin/moderator client application.
+
+PocketChat Application Protocol Summary
+-> The full details of the protocol can be found in ChatProtocol.cs
 ```
 struct ChatProtocol {  
 	byte 		command;	//256 possible commands  
