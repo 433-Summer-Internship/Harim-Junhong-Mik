@@ -1,0 +1,5 @@
+c:\users\mikm\documents\visual studio 2015\Projects\ChatProtocol\ChatProtocol\bin\Release\ChatProtocol.dll
+c:\users\mikm\documents\visual studio 2015\Projects\ChatProtocol\ChatProtocol\bin\Release\ChatProtocol.pdb
+c:\users\mikm\documents\visual studio 2015\Projects\ChatProtocol\ChatProtocol\obj\Release\ChatProtocol.dll
+c:\users\mikm\documents\visual studio 2015\Projects\ChatProtocol\ChatProtocol\obj\Release\ChatProtocol.pdb
+c:\users\mikm\documents\visual studio 2015\Projects\ChatProtocol\ChatProtocol\obj\Release\ChatProtocol.csprojResolveAssemblyReference.cache
