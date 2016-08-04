@@ -23,6 +23,25 @@ namespace ChatProtocolController
         public byte[] variableLengthField;              //Variable sized value  
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct RoomInfoDatum
+    {
+        
+        public byte roomNumber;                         //Room Number (max 255 number as 0 is the Lobby)  
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+        public string roomTitle;                        //Room Title with a max size of 20
+
+        public byte userCount;                          //User count for the room (max 255 per room) 
+
+        public RoomInfoDatum(byte num, string title, byte count)
+        {
+            roomNumber = num;
+            roomTitle = title;
+            userCount = count;
+        }
+    }
+
     /// <summary>
     /// This class controls the creation and depacking of sendable byte arrays in accordance to our chat protocol.
     /// </summary>
@@ -64,7 +83,7 @@ namespace ChatProtocolController
             public const byte USER_LIST_SEND =              51;
             public const byte USER_LIST_REQUEST_RESULT =    150;
             public const byte USER_LIST_SEND_RESULT =       151;
-            
+
             //Connection health commands
             public const byte HEARTBEAT =                   60;
             public const byte HEARTBEAT_RESULT =            160;
@@ -116,15 +135,15 @@ namespace ChatProtocolController
             IntPtr buff = Marshal.AllocHGlobal(receivedData.Length);                               
             Marshal.Copy(receivedData, 0, buff, receivedData.Length);                               
             object packet = Marshal.PtrToStructure(buff, typeof(ChatProtocol));                    
-            Marshal.FreeHGlobal(buff);                                                             
-            
+            Marshal.FreeHGlobal(buff);                  
+
             //Check for a problem in the data length
             if (Marshal.SizeOf(packet) != receivedData.Length)                              
             {
                 return false;                                       //Return False on a Data Length Error                                          
             }
             receivedPacket = (ChatProtocol)packet;                  //If no errors, cast the data into our ChatProtocol struct
-            
+
             return true;                                            //Return True on success                                                   
         }
     }
