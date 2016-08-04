@@ -64,9 +64,13 @@ namespace ChatProtocolController
             public const byte USER_LIST_SEND =              51;
             public const byte USER_LIST_REQUEST_RESULT =    150;
             public const byte USER_LIST_SEND_RESULT =       151;
-
+            
             //Connection health commands
             public const byte HEARTBEAT =                   60;
+            
+            //Connection Passing commands
+            public const byte CONNECTIOINPASSING_REQUEST    70;
+            public const byte CONNECTIOINPASSING_RESULT     170;
         }
 
         /// <summary>
