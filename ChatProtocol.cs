@@ -74,7 +74,7 @@ namespace ChatProtocolController
 
             //User statistics requests
             public const byte ROOM_LIST_REQUEST =           40;
-            public const byte ROOM_LIST_SEND =              41;
+            public const byte ROOM_LIST_SEND =              41; //no room
             public const byte ROOM_LIST_REQUEST_RESULT =    140;
             public const byte ROOM_LIST_SEND_RESULT =       141;
 
