@@ -70,7 +70,7 @@ SendUserInfo – Number of Real Users (fixed length)
 
 <b>Code</b>:  
 Source code, dll, and exe files can be found at various locations:  
-Client: https://github.com/433-Summer-Internship/Harim-Junhong-Mik/tree/master/client    
+Client: https://github.com/eblikes2play/Chat_Client    
 FE Server: https://github.com/433-Summer-Internship/Harim-Junhong-Mik/tree/master/fes   
 Redis Client: https://github.com/Mukikaizoku/MikRedisDB-for-Pocketchat-App   
 Admin (Monitor) Client: https://github.com/Mukikaizoku/PocketChat-Admin-Client
