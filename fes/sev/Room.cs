@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using def;
 using ChatProtocolController;
 using MikRedisDB;
+using System.Threading;
 
 namespace Servernamespace
 {
@@ -19,8 +20,8 @@ namespace Servernamespace
 
         string name;
         ushort roomNumber;
-        Timer broadcast;
-        Timer heartbeat;
+        Thread broadcastThread;
+        System.Timers.Timer heartbeat;
         List<Client> roomMember = new List<Client>();
 
         public Room(string nm, ushort number, RedisDBController redisDB)
@@ -30,49 +31,45 @@ namespace Servernamespace
             redis = redisDB;
             Functions.Log("createroom : " + roomNumber);
 
-            broadcast = new Timer(10);
-            heartbeat = new Timer(1000);
-
-            //broadcast.Elapsed += new ElapsedEventHandler(Broadcast);
-            heartbeat.Elapsed += new ElapsedEventHandler(Broadcast);
-
-            //broadcast.Enabled = true;
-            heartbeat.Enabled = true;
+            heartbeat = new System.Timers.Timer(5000);
+            broadcastThread = new Thread(Broadcast);
+            
+            heartbeat.Elapsed += new ElapsedEventHandler((sender, e) => Functions.HeartBeat(sender, e, roomMember));
+            heartbeat.Enabled = false;
 
         }//Room
 
         public void JoinRoom(Client s)
         {
             roomMember.Add(s);
+            if (!heartbeat.Enabled)
+            {
+                heartbeat.Enabled = true;
+                broadcastThread.Start();
+            }
         }
         
-        public void Broadcast(object sender, ElapsedEventArgs events)
+        
+        void Broadcast()
         {
             Socket curSock = null;
+            while (heartbeat.Enabled)
             {
-                if (0 >= roomMember.Count)
-                {
-                    return;
-                }
                 try
                 {
                     List<Socket> selectList = new List<Socket>();
-                    
+
                     for (int i = 0; i < roomMember.Count; i++)
                     {
                         selectList.Add(roomMember[i].GetSocket());
                     }
 
                     Socket.Select(selectList, null, null, 1000);
-                    
-                    if (selectList.Count == 0)
-                    {
-                        return; 
-                    }
+
                     for (int i = 0; i < selectList.Count(); i++)
                     {
                         curSock = selectList[i];
-                        
+
                         byte[] recevData = new byte[Marshal.SizeOf(typeof(ChatProtocol))];                      //프로토콜 크기만큼 메모리 할당
 
                         try
@@ -84,7 +81,7 @@ namespace Servernamespace
                                 break;
                             }
                         }
-                        catch(SocketException e)
+                        catch (SocketException e)
                         {
                             if (e.ErrorCode == 10054)                       //disconnected
                             {
@@ -208,7 +205,7 @@ namespace Servernamespace
                         Functions.Log(e.ToString());
                     }
                 }//catch (SocketException e)
-                catch(ObjectDisposedException e)
+                catch (ObjectDisposedException e)
                 {
                     Functions.Log(e.HelpLink);
                 }
@@ -226,11 +223,9 @@ namespace Servernamespace
         {
             return roomMember.Count();
         }
-       
+
         bool LeaveRoom(Client c)
         {
-            int a = redis.RoomRemoveUser((uint)this.GetNumber(), c.GetID());
-            
             if (!Server.AddLobbyClient(c))
                 return false;
 
@@ -242,8 +237,9 @@ namespace Servernamespace
                     return false;
                 }
             }
-                    heartbeat.Enabled = false;
 
+            heartbeat.Enabled = false;
+            int a = redis.RoomRemoveUser((uint)this.GetNumber(), c.GetID());
             return true;
         }
         public Client GetMember(string id)

@@ -263,12 +263,14 @@ namespace Servernamespace
                                     {
                                         str = "-2";
                                     }
+                                    else
+                                    {
+                                        Room ro = new Room(roomtitle, id, redis);
+                                        roomList.Add(ro);
+                                        str = ro.GetNumber().ToString();
+                                    }
                                 }
 
-                                Room ro = new Room(roomtitle, id, redis);
-                                roomList.Add(ro);
-
-                                str = ro.GetNumber().ToString();
                                 command = PacketMaker.CommandCode.CREATE_ROOM_RESULT;
 
                                 inputdata = BitConverter.GetBytes(Int32.Parse(str));
@@ -354,15 +356,15 @@ namespace Servernamespace
                                     fixedLengthField = (ushort)inputdata.Length;
                                     break;
                                 }
+                                fixedLengthField = 0;
 
-                                string[] nameList = redis.RoomList();
-                                if (nameList == null)
+                                string[] number = redis.RoomList();
+                                if (number == null)
                                 {
                                     Functions.Log("redis disconnected");
                                     break;
                                 }
-
-                                if (nameList.Length == 0)
+                                if (number.Length == 0)
                                 {
                                     str += "No rooms exist.";
                                     command = PacketMaker.CommandCode.ROOM_LIST_SEND;
@@ -370,53 +372,41 @@ namespace Servernamespace
                                     inputdata.CopyTo(variableLengthField, 0);
                                     fixedLengthField = (ushort)inputdata.Length;
                                 }
-                                else
-                                { 
 
-                                    command = PacketMaker.CommandCode.ROOM_LIST_REQUEST_RESULT;
-                                    fixedLengthField = 0;
+                                int len = number.Length;
 
+                                RoomInfoDatum[] roominfos = new RoomInfoDatum[len];
 
-                                    string[] number = redis.RoomList();
-                                    if (number == null)
-                                    {
-                                        Functions.Log("redis disconnected");
-                                        break;
-                                    }
-
-                                    int len = number.Length;
-
-                                    RoomInfoDatum[] roominfos = new RoomInfoDatum[len];
-
-                                    for (int roomCount = 0; roomCount < len; roomCount++)
-                                    {
-                                        byte num = byte.Parse(number[roomCount].Substring(5));
-                                        roominfos[roomCount].roomNumber = num;
-                                        redis.RoomGetTitle((uint)roomCount, out roominfos[roomCount].roomTitle);
-                                        roominfos[roomCount].userCount = (byte)redis.RoomGetUserCount((uint)num);
-                                    }
-
-                                    int RT = len / 46;
-                                    if (len % 46 != 0)
-                                        RT++;
-
-                                    for (int order = 0; order < RT; order++)
-                                    {
-                                        fixedLengthField = 0;
-                                        variableLengthField[0] = (byte)(order + 1);
-                                        variableLengthField[1] = (byte)(RT);
-
-                                        for (int rcnt = 0 + (order * 46); rcnt < (order * 46) + ((int)(len / 46) != 0 ? 46 : len); rcnt++)
-                                        {
-                                            PacketMaker.RoomInfoDatumToByte(roominfos[rcnt]).CopyTo(variableLengthField, 2 + (rcnt * 22) - (order * 46));
-                                            len -= 46;
-                                            fixedLengthField++;
-                                        }
-                                        //send;
-                                        sendData = PacketMaker.CreatePacket(command, fixedLengthField, variableLengthField);
-                                        curSock.Send(sendData, 0, sendData.Length, SocketFlags.None);
-                                    }
+                                for (int roomCount = 0; roomCount < len; roomCount++)
+                                {
+                                    byte num = byte.Parse(number[roomCount].Substring(5));
+                                    roominfos[roomCount].roomNumber = num;
+                                    redis.RoomGetTitle((uint)roomCount, out roominfos[roomCount].roomTitle);
+                                    roominfos[roomCount].userCount = (byte)redis.RoomGetUserCount((uint)num);
                                 }
+
+                                int RT = len / 46;
+                                if (len % 46 != 0)
+                                    RT++;
+
+                                command = PacketMaker.CommandCode.ROOM_LIST_REQUEST_RESULT;
+                                for (int order = 0; order < RT; order++)
+                                {
+                                    fixedLengthField = 0;
+                                    variableLengthField[0] = (byte)(order + 1);
+                                    variableLengthField[1] = (byte)(RT);
+
+                                    for (int rcnt = 0 + (order * 46); rcnt < (order * 46) + ((int)(len / 46) != 0 ? 46 : len); rcnt++)
+                                    {
+                                        PacketMaker.RoomInfoDatumToByte(roominfos[rcnt]).CopyTo(variableLengthField, 2 + (rcnt * 22) - (order * 46));
+                                        fixedLengthField++;
+                                    }
+                                    len -= 46;
+                                    //send;
+                                    sendData = PacketMaker.CreatePacket(command, fixedLengthField, variableLengthField);
+                                    curSock.Send(sendData, 0, sendData.Length, SocketFlags.None);
+                                }
+                                command = 0;
 
                                 break;
                             #endregion roomlist
@@ -441,7 +431,7 @@ namespace Servernamespace
                                     Room passingRoome = FindRoom(passingRoomNumber);
                                     if (passingRoome != null)
                                     {
-                                        if (FindRoom(passingRoomNumber).GetCount() >= 5)
+                                        if (FindRoom(passingRoomNumber).GetCount() < 5)
                                         {
                                             Functions.Log(Functions.FindClient(clientList, curSock).GetID() + " - JoinRoom " + passingRoomNumber);
 

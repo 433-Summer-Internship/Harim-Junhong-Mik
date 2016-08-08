@@ -1,0 +1,11 @@
+C:\Users\askdnwn\Desktop\포켓챗\2016-08-04\fes\sev\bin\Release\sev.exe.config
+C:\Users\askdnwn\Desktop\포켓챗\2016-08-04\fes\sev\bin\Release\sev.exe
+C:\Users\askdnwn\Desktop\포켓챗\2016-08-04\fes\sev\bin\Release\sev.pdb
+C:\Users\askdnwn\Desktop\포켓챗\2016-08-04\fes\sev\bin\Release\ChatProtocol.dll
+C:\Users\askdnwn\Desktop\포켓챗\2016-08-04\fes\sev\bin\Release\MikRedisDB.xml
+C:\Users\askdnwn\Desktop\포켓챗\2016-08-04\fes\sev\obj\Release\server.csprojResolveAssemblyReference.cache
+C:\Users\askdnwn\Desktop\포켓챗\2016-08-04\fes\sev\obj\Release\sev.exe
+C:\Users\askdnwn\Desktop\포켓챗\2016-08-04\fes\sev\obj\Release\sev.pdb
+C:\Users\askdnwn\Desktop\포켓챗\2016-08-04\fes\sev\bin\Release\StackExchange.Redis.dll
+C:\Users\askdnwn\Desktop\포켓챗\2016-08-04\fes\sev\bin\Release\StackExchange.Redis.pdb
+C:\Users\askdnwn\Desktop\포켓챗\2016-08-04\fes\sev\bin\Release\StackExchange.Redis.xml

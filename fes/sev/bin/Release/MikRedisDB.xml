@@ -1,0 +1,871 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MikRedisDB</name>
+    </assembly>
+    <members>
+        <member name="T:MikRedisDB.RedisDBController">
+            <summary>
+            The RedisDBController class provides a handle to a StackExchange.Redis redis-connection 
+            as well as functions for the specific application of documenting a user pool and room pool 
+            used in a chatting application. 
+            </summary>
+            <remarks>
+            The following Redis database structures are used:
+            <list type="definition">
+                <item>
+                    <term>UserPool</term>
+                    <description>-ZSet with User:username values and message count keys</description>
+                </item>
+                <item>
+                    <term>User:username</term>
+                    <description>-Hash for each username that contains user relevant data (Password, ConnectionID, LoginFlag, DummyFlag, BlockFlag, SuspendTImer, RoomNumber)</description>
+                </item>
+                <item>
+                    <term>LoginPool</term>
+                    <description>-Set with User:username members who's Hash contains a true LoginFlag</description>
+                </item>
+                <item>
+                    <term>DummyPool</term>
+                    <description>-Set with User:username members who's Hash contains a true DummyFlag</description>
+                </item>
+                <item>
+                    <term>RoomPool</term>
+                    <description>-ZSet with Room:roomnumber values and message count keys</description>
+                </item>
+                <item>
+                    <term>Room:roomnumber</term>
+                    <description>-Hash for each roomnumber that contains room relevant data (RoomTitle, RoomOwner)</description>
+                </item>
+                <item>
+                    <term>Room:roomnumber:Contents</term>
+                    <description>-Set with User:username members who's contained inside the corresponding roomnumber</description>
+                </item>
+            </list>
+            </remarks>
+        </member>
+        <member name="F:MikRedisDB.RedisDBController.connMulti">
+            <summary>
+            Create the Redis connection "lazily" meaning the connection won't be made until it is needed. 
+            The Lazy class allows for thread-safe initialization.
+            </summary>
+        </member>
+        <member name="P:MikRedisDB.RedisDBController.safeConn">
+            <summary>
+            Read-only ConnectionMultiplexer property so it remains singleton.
+            </summary>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.SetConfigurationOptions(System.String,System.Int32,System.String)">
+            <summary>
+            The SetConfigurationOptions method allows the Redis client to setup the IP, port number, and password to the Redis server.
+            </summary>
+            <param name="ip">IP address of the Redis server.</param>
+            <param name="portNumber">Port number of the Redis server.</param>
+            <param name="password">The password for accessing the Redis Server.</param>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.SetupConnection">
+            <summary>
+            The SetupConnection method retrieves a handler of the Redis database 'db' for calling Redis-DB commands.
+            </summary>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.CloseConnection">
+            <summary>
+            The CloseConnection method closes the connection to the Redis server.
+            </summary>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.CreateUser(System.String,System.String)">
+            <summary>
+            The CreateUser Method creates a new user in the DB and sets their default values.
+            </summary>
+            <remarks>
+            The following information is created in the Redis database. An new entry (User:username) is made in the "UserPool" ZSet with a message count value of 0. 
+            A Hash of the Redis-key "User:username" is created with the following hash-keys:
+            <list type="definition">
+                <item>
+                    <term>Password</term>
+                    <description>-The user's password for login authentication.</description>
+                </item>
+                <item>
+                    <term>ConnectionID</term>
+                    <description>-A numeric value used to keep track of the user's connection information in the server.</description>
+                </item>
+                <item>
+                    <term>LoginFlag</term>
+                    <description>-A boolean value to keep track if the user is logged in.</description>
+                </item>
+                <item>
+                    <term>DummyFlag</term>
+                    <description>-A boolean value to keep track if the user is a dummy client.</description>
+                </item>
+                <item>
+                    <term>BlockFlag</term>
+                    <description>-A boolean value to keep track if the user is under suspension.</description>
+                </item>
+                <item>
+                    <term>SuspendTimer</term>
+                    <description>-A numeric value containing a Unix timestamp indicating the end of a suspension period. [A value of 0 = no suspension]</description>
+                </item>
+                <item>
+                    <term>RoomNumber</term>
+                    <description>-A numeric value indicating which room number a user is contained in. [A value of 0 = lobby]</description>
+                </item>
+            </list>
+            </remarks>
+            <param name="name">The username of the user.</param>
+            <param name="password">The password of the user.</param>
+            <returns>
+            The method returns true on success and false if the requested username already exists in the database.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.DeleteUser(System.String,System.String)">
+            <summary>
+            The DeleteUser method deletes a user from the Redis database.
+            </summary>
+            <remarks>
+            To ensure the clean deletion of a user entry the following procedure is followed. First, the user is removed from it's room. 
+            Next, the User:username hash is deleted. Then, the User:username entry in the "UserPool" is removed. In case the user is active within the 
+            "LoginPool" or "DummyPool," those corresponding entries are checked and removed. Password authentication is required for this method to work.
+            </remarks>
+            <param name="name">The username of the user.</param>
+            <param name="password">The password of the user.</param>
+            <returns>
+            This method returns true on success and false if either the username or password are incorrect (unspecified).
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.DoesUsernameExist(System.String)">
+            <summary>
+            The DoesUsernameExist method determines if a user is contained within the Redis database.
+            </summary>
+            <param name="name">The username of the user.</param>
+            <returns>The method returns true if the user exists and false if the user does not exist.</returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.IsPasswordCorrect(System.String,System.String)">
+            <summary>
+            The IsPasswordCorrect method determines if a user's password is correct.
+            </summary>
+            <remarks>
+            This method is set to private to prevent a RedisDBController caller from determining if a password is correct.
+            </remarks>
+            <param name="name">The username of the user.</param>
+            <param name="password">The password of the user.</param>
+            <returns>
+            The method returns true if the password is correct and false if the password is incorrect.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.IsUserLoggedIn(System.String)">
+            <summary>
+            The IsUserLoggedIn method determines if the user is logged in or not. Return values: (-1) Username doesn't exist; (0) User not logged in; (1) User logged in.
+            </summary>
+            <param name="name">The username of the user.</param>
+            <returns>
+            The method returns an integer value to report one of 3 cases:
+            <list type="definition">
+                <item>
+                    <term>-1</term>
+                    <description>-The username does not exist.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The user is not logged in.</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The user is logged in.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.IsUserDummy(System.String)">
+            <summary>
+            The IsUserDummy method checks if a user is a dummy client. Return values: (-1) Username doesn't exist; (0) User not dummy; (1) User is dummy.
+            </summary>
+            <param name="name">The username of the user.</param>
+            <returns>
+            The method returns an integer value to report one of 3 cases:
+            <list type="definition">
+                <item>
+                    <term>-1</term>
+                    <description>-The username does not exist.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The user is not a dummy.</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The user is a dummy.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.IsUserBlocked(System.String)">
+            <summary>
+            The IsUserBlocked method checks if a user is suspended. Return values: (-1) Username doesn't exist; (0) User not suspended; (1) User suspended; (2) User no longer suspended.
+            </summary>
+            <remarks>
+            Suspension times for blocked users are only updated upon a relevant DB check. This method reports that a previously unchecked suspension has ended 
+            by returning a value of 2.
+            </remarks>
+            <param name="name">The username of the user.</param>
+            <returns>
+            The method returns an integer value to report one of 4 cases:
+            <list type="definition">
+                <item>
+                    <term>-1</term>
+                    <description>-The username does not exist.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The user is not suspended.</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The user is suspended.</description>
+                </item>
+                <item>
+                    <term>2</term>
+                    <description>-The user is no longer suspended.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetUserConnectionID(System.String)">
+            <summary>
+            The GetUsrConnectionID method returns the connection ID of the user. Return values: (-1) Username doesn't exist; (Other values) (int)connectionID.
+            </summary>
+            <param name="name">The username of the user.</param>
+            <returns>
+            The method returns -1 when the passed username does not exist. If the user exists, the connectionID is returned as an int.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetUserSuspendTime(System.String)">
+            <summary>
+            The GetUserSuspendTime method returns a user's suspension timestamp if the user is suspended. Return values: (0) Username doesn't exist; (1) User not suspended; 
+            (2) User no longer suspended; (Other Values) (uint)Suspension expiration timestamp in Unix time.
+            </summary>
+            <remarks>
+            Suspension times for blocked users are only updated upon a relevant DB check. This method reports that a previously unchecked suspension has ended 
+            by returning a value of 2.
+            </remarks>
+            <param name="name">The username of the user.</param>
+            <returns>
+            The method returns an unsigned integer value to report one of 4 cases:
+            <list type="definition">
+                <item>
+                    <term>0</term>
+                    <description>-The username does not exist.</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The user is not suspended.</description>
+                </item>
+                <item>
+                    <term>2</term>
+                    <description>-The user is no longer suspended.</description>
+                </item>
+                <item>
+                    <term>Other Values</term>
+                    <description>-A uint representation of the suspension expiration Unix timestamp.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.HasSuspensionEnded(System.String)">
+            <summary>
+            The HasSuspensionEnded method checks if a user's suspension time has ended.
+            </summary>
+            <remarks>
+            This method is private as it is intended to only be used by suspension-relevant public functions in RedisDBController.
+            </remarks>
+            <param name="name">The username of the user.</param>
+            <returns>
+            The method returns true if the user is no longer blocked and false if the user is still blocked.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetUserMessageCount(System.String)">
+            <summary>
+            The GetUserMessageCount method retrieves the user's message count. Return values: (-1) Username doesn't exist; (Other values) (int)message count.
+            </summary>
+            <param name="name">The username of the user.</param>
+            <returns>
+            The method returns -1 if the user does not exist and the message count as an int if the user exists.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetUserLocation(System.String)">
+            <summary>
+            The GetUserLocation method retrieves the user's room location. Return values: (-1) Username doesn't exist; (Other values) (int)room number [0 = Lobby].
+            </summary>
+            <param name="name">The username of the user.</param>
+            <returns>
+            The method returns -1 if the user does not exist and the room number as an int if the user exists.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetUserRank(System.String)">
+            <summary>
+            The GetUserRank method retrieves the user's message count rank. Return values: (-1) Username doesn't exist; (Other values) (int)rank.
+            </summary>
+            <remarks>
+            The Redis ZSet ordering starts at index 0 and we add one to the index to get the properly ordered rank.
+            </remarks>
+            <param name="name">The username of the user.</param>
+            <returns>
+            The method returns -1 if the user does not exist and the rank as an int if the user exists.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetMessageCountAtRank(System.Int32)">
+            <summary>
+            The GetMessageCountAtRank method retrieves the message count at a specified rank. Return values: (-1) Rank doesn't exist; (Other values) (int)message count.
+            </summary>
+            <remarks>
+            This method finds the message count rank in the "UserPool" by using the StackExchange.Redis method called SortedSetRangeByRank and looking up the Redis value at the 
+            (rank - 1) index. After obtaining the Redis value, the message count is determined by using SortedSetScore.
+            </remarks>
+            <param name="rank">An int representing the rank.</param>
+            <returns>
+            The method returns -1 if the rank does not exist and the message count at rank as an int if the rank exists.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetUsernameAtRank(System.Int32)">
+            <summary>
+            The GetUsernameAtRank method retrieves the username at a specified rank. Return values: ("0") Rank doesn't exist; (Other values) (string)Username.
+            </summary>
+            <remarks>
+            This method finds the message count rank in the "UserPool" by using the StackExchange.Redis method called SortedSetRangeByRank and looking up the Redis value at the 
+            (rank - 1) index. The Redis value is the username.
+            </remarks>
+            <param name="rank">An int representing the rank.</param>
+            <returns>
+            The method returns the string "0" if the rank does not exist and the username at rank as a string if the rank exists.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.ChangeUsername(System.String,System.String,System.String)">
+            <summary>
+            The ChangeUsername method attempts a change of a username. Return values: (-3) Name taken; (-2) currentName = newName; (-1); User blocked; (0) Auth error; (1) Success.
+            </summary>
+            <remarks>
+            Upon username change, a variety of Redis DB entries must be changed to avoid errors in the database. 
+            </remarks>
+            <param name="currentName">The current username of the user.</param>
+            <param name="newName">The desired username of the user.</param>
+            <param name="password">The password of the user.</param>
+            <returns>
+            The method returns and int to distinguish between various result types:
+            <list type="definition">
+                <item>
+                    <term>-3</term>
+                    <description>-Authentication successful, but the desired name is already taken.</description>
+                </item>
+                <item>
+                    <term>-2</term>
+                    <description>-Authentication successful, but the desired name is the same as the current name.</description>
+                </item>
+                <item>
+                    <term>-1</term>
+                    <description>-Authentication successful, but the user is suspended.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The username or password is incorrect (unspecified).</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The username was successfully changed.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.ChangePassword(System.String,System.String,System.String)">
+            <summary>
+            The ChangePassword method attempts a change of a password. Return values: (-2) currentPassword = newPassword; (-1); User blocked; (0) Auth error; (1) Success.
+            </summary>
+            <param name="name">The username of the user.</param>
+            <param name="currentPassword">The current password of the user.</param>
+            <param name="newPassword">The desired password of the user.</param>
+            <returns>
+            The method returns and int to distinguish between various result types:
+            <list type="definition">
+                <item>
+                    <term>-2</term>
+                    <description>-Authentication successful, but the desired password is the same as the current password.</description>
+                </item>
+                <item>
+                    <term>-1</term>
+                    <description>-Authentication successful, but the user is suspended.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The username or password is incorrect (unspecified).</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The password was successfully changed.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.ChangeConnectionID(System.String,System.Int32)">
+            <summary>
+            The ChangeConnectionID method attempts to change the user's connection ID. Return values: (-1) Username doesn't exist; (Other values) (int)PREVIOUS connection ID.
+            </summary>
+            <param name="name">The username of the user.</param>
+            <param name="newConnectionID">The new connection ID of the user.</param>
+            <returns>
+            The method returns -1 if the user does not exist and the PREVIOUS connection ID as an int if the user exists.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.BlockUser(System.String,System.UInt32)">
+            <summary>
+            The BlockUser sets a suspension (in minutes) on a particular user. Return values: (0) Username doesn't exist; (Other Values) (uint)Suspension expiration timestamp in Unix time.
+            </summary>
+            <remarks>
+            Suspension times for blocked users are only updated upon a relevant DB check.
+            </remarks>
+            <param name="name">The username of the user.</param>
+            <param name="minutes">The number of minutes the user will be suspended for.</param>
+            <returns>
+            The method returns an unsigned integer value to report one of 4 cases:
+            <list type="definition">
+                <item>
+                    <term>0</term>
+                    <description>-The username does not exist.</description>
+                </item>
+                <item>
+                    <term>Other Values</term>
+                    <description>-A uint representation of the suspension expiration Unix timestamp.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.UnBlockUser(System.String)">
+            <summary>
+            The UnBlockUser method removes a suspension on a user. Return values: (-1) Username isn't suspended; (0) Username doesn't exist; (1) User unsuspended.
+            </summary>
+            <remarks>
+            Suspension times for blocked users are only updated upon a relevant DB check. 
+            </remarks>
+            <param name="name">The username of the user.</param>
+            <returns>
+            The method returns an integer value to report one of 4 cases:
+            <list type="definition">
+                <item>
+                    <term>-1</term>
+                    <description>-The user is not suspended.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The username does not exist.</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The user is unsuspended.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.AddToUserMessageCount(System.String,System.Int32)">
+            <summary>
+            The AddToUserMessageCount method increases (or decreases) a users message count. Return values: (-1) Username doesn't exist; (Other Values) User's new message count.
+            </summary>
+            <remarks>
+            This function allows the message count to be decremented with a negative input value. However, the message count cannot go below 0 and this is accounted for in the method. 
+            </remarks>
+            <param name="name">The username of the user.</param>
+            <param name="count">An int amount to increase or decrease the message count of a user.</param>
+            <returns>
+            The method returns an integer value to report one of 4 cases:
+            <list type="definition">
+                <item>
+                    <term>-1</term>
+                    <description>-The username does not exist.</description>
+                </item>
+                <item>
+                    <term>Other Values</term>
+                    <description>-The user's new message count after modification (returned as an int).</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.Login(System.String,System.String,System.Int32,System.Boolean)">
+            <summary>
+            The Login method attempts to login a user. Return values: (-1) User is suspended; (0) Auth error; (Other values) (int)PREVIOUS connection ID [login override] or connection ID [normal case].
+            </summary>
+            <remarks>
+            If a login occurs when a user is already logged in, a login override occurs. In such a case, the new connection ID is different than the previous one. 
+            The returned connection ID is then the previous connection ID, which allows a server to determine quickly if the login request produced a login override.
+            </remarks>
+            <param name="name">The username of the user.</param>
+            <param name="password">The password of the user.</param>
+            <param name="connectionID">The connection ID of the user.</param>
+            <param name="isDummy">A flag; true if the user is a dummy and false otherwise (default).</param>
+            <returns>
+            The method returns -1 if the user is suspended, the connection ID if the user wasn't previously logged in and the PREVIOUS connection ID as an int in case of a login override.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.Logout(System.String)">
+            <summary>
+            The Logout method logs a user out. Return values: (-1) User does not exist; (0) User already logged out; (1) Success.
+            </summary>
+            <param name="name">The username of the user.</param>
+            <returns>
+            The method returns an integer value to report one of 3 cases:
+            <list type="definition">
+                <item>
+                    <term>-1</term>
+                    <description>-The username does not exist.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The user is already logged out.</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-Logout successful.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetUserPoolSize">
+            <summary>
+            The GetUserPoolSize method returns the total number of users registered in the database.
+            </summary>
+            <returns>
+            The method returns an long value of the number of registered users in the database.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetUserList">
+            <summary>
+            The GetUserList method returns a string[] of all the names of users registered in the database.
+            </summary>
+            <returns>
+            The method returns a string[] of all the names of users registered in the database.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetTopList(System.Int32)">
+            <summary>
+            The GetTopList method returns a Dictionary containing the top-n ranking list of the top n-ranked users in the database.
+            </summary>
+            <param name="topNumber">The top-n number of rank entries desired to be examined.</param>
+            <returns>
+            This method returns a Dictionary containing the top-n ranking list of the top n-ranked users in the database.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetLoginPoolSize">
+            <summary>
+            The GetLoginPoolSize method returns the total number of logged in users in the database.
+            </summary>
+            <returns>
+            The method returns the total number of logged in users in the database.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetDummyPoolSize">
+            <summary>
+            The GetDummyPoolSize method returns the total number of dummy users in the database.
+            </summary>
+            <returns>
+            The method returns the total number of dummy users in the database.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetLoginList">
+            <summary>
+            The GetLoginList method returns a string[] containing the names of all logged in users in the database.
+            </summary>
+            <returns>
+            The method returns a string[] containing the names of all logged in users in the database.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetDummyList">
+            <summary>
+            The GetDummyList method returns a string[] containing the names of all dummy users in the database.
+            </summary>
+            <returns>
+            The method returns a string[] containing the names of all dummy users in the database.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetSubTopList(System.Int32,System.String)">
+            <summary>
+            The GetSubTopList method returns a Dictionary containing the top-n ranking list of the top n-ranked users in the database intersected with another Set in the database. WARNING: The resultant scores in the dictionary are all 
+            1 greater than their true values. Please adjust accordingly.
+            </summary>
+            <remarks>
+            WARNING: The Redis set intersection is performed between a ZSet and a Set to get a ZSet. Because the Set members do not have scores, Redis assumes all scores equal 1. In the score aggregation options provided 
+            by Redis, the chosen scores can be min, max, or sum. Due to the score = 1 default, all of these options create rank sets with incorrect score values. Thus, the method was designed with the Aggregate.Sum 
+            option and the caller is warned that the score values of the resultant set are 1 greater than their actual values.
+            </remarks>
+            <param name="topNumber">The top-n number of rank entries desired to be examined.</param>
+            <param name="poolName">The name of the Redis set used for the intersection.</param>
+            <returns>
+            This method returns a Dictionary containing the top-n ranking list of the top n-ranked users in the database intersected with another Set in the database.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomCreate(System.UInt32,System.String,System.String)">
+            <summary>
+            The RoomCreate method creates a new room in the Redis database. Return values: (-1) Room already exists; (0) Owner is not a registered user; (1) Success.
+            </summary>
+            <param name="roomNumber">The room number.</param>
+            <param name="roomTitle">The title or topic of the room.</param>
+            <param name="owner">The username of the user who created the room.</param>
+            <returns>
+            The method returns an integer value to report one of 3 cases:
+            <list type="definition">
+                <item>
+                    <term>-1</term>
+                    <description>-The room number already exists.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The owner is not a registered user.</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The room has been successfully created.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomDelete(System.UInt32)">
+            <summary>
+            The RoomDelete method deletes a room in the Redis database.
+            </summary>
+            <remarks>
+            This function is made private so the only way a room can be deleted is when the final user is removed.
+            </remarks>
+            <param name="roomNumber">The room number.</param>
+            <returns>
+            The method returns true upon success and false if the room does not exist.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomExist(System.UInt32)">
+            <summary>
+            The RoomExist method checks the existence of a room.
+            </summary>
+            <param name="roomNumber">The room number.</param>
+            <returns>
+            The method returns true if the room exists and false if the room does not exist.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomContainsUser(System.UInt32,System.String)">
+            <summary>
+            The RoomContainsUser method checks if a user is in a particular room. Return values: (-2) User does not exist; (-1) Room does not exist; (0) User is not in the room; (1) User is in the room.
+            </summary>
+            <param name="roomNumber">The room number.</param>
+            <param name="name">The username of the user who may be in the room.</param>
+            <returns>
+            The method returns an integer value to report one of 4 cases:
+            <list type="definition">
+                <item>
+                    <term>-2</term>
+                    <description>-The user does not exist.</description>
+                </item>
+                <item>
+                    <term>-1</term>
+                    <description>-The room does not exist.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The user is not in the room.</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The user is in the room.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomGetTitle(System.UInt32,System.String@)">
+            <summary>
+            The RoomGetTitle method outputs the title of a room and returns a boolean value for success.
+            </summary>
+            <param name="roomNumber">The room number.</param>
+            <param name="roomTitle">A container for the determined room title.</param>
+            <returns>
+            The method returns true if the room exists and false if the room does not exist.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomGetUserCount(System.UInt32)">
+            <summary>
+            The RoomGetUserCount method returns the number of users in a particular room or (-1) if the room does not exist.
+            </summary>
+            <param name="roomNumber">The room number.</param>
+            <returns>
+            The method returns the number of users in a particular room or (-1) if the room does not exist.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomGetOwner(System.UInt32,System.String@)">
+            <summary>
+            The RoomGetOwner method outputs the name of the owner of a particular room and returns a boolean value for success.
+            </summary>
+            <param name="roomNumber">The room number.</param>
+            <param name="roomOwner">A container for the determined room owner name.</param>
+            <returns>
+            The method returns true if the room exists and false if the room does not exist.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomGetSizeRank(System.UInt32)">
+            <summary>
+            The RoomGetUserCount method returns the size ranking of a particular room or (-1) if the room does not exist.
+            </summary>
+            <param name="roomNumber">The room number.</param>
+            <returns>
+            The method returns the size ranking of a particular room or (-1) if the room does not exist.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomChangeTitle(System.UInt32,System.String,System.String@)">
+            <summary>
+            The RoomChangeTitle method attempts to change the title of a room. Upon success, it outputs the old room name. Return values: (-1) Room does not exist; (0) New room title = old room title; (1) Success.
+            </summary>
+            <param name="roomNumber">The room number.</param>
+            <param name="newRoomTitle">The desired new title for the room.</param>
+            <param name="oldRoomTitle">A container for the old room title.</param>
+            <returns>
+            The method returns an integer value to report one of 3 cases:
+            <list type="definition">
+                <item>
+                    <term>-1</term>
+                    <description>-The room does not exist.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The new title is the same as the old title.</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The room title change was successful.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomSetOwner(System.UInt32,System.String,System.String@)">
+            <summary>
+            The RoomSetOwner method attempts to change the owner of a room. Upon success, it outputs the old owner name. Return values: (-1) Room does not exist; (0) New owner = old owner; (1) Success.
+            </summary>
+            <param name="roomNumber">The room number.</param>
+            <param name="newRoomOwner">The desired new owner for the room.</param>
+            <param name="oldRoomOwner">A container for the old owner.</param>
+            <returns>
+            The method returns an integer value to report one of 3 cases:
+            <list type="definition">
+                <item>
+                    <term>-1</term>
+                    <description>-The room does not exist.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The new owner is the same as the old owner.</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The room owner change was successful.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomAddUser(System.UInt32,System.String)">
+            <summary>
+            The RoomAddUser method attempts to add a user to a room. Return values: (-2) Room already contains user; (-1) Room does not exist; (0) User does not exist; (1) Success.
+            </summary>
+            <param name="roomNumber">The room number.</param>
+            <param name="name">The name of the user.</param>
+            <returns>
+            The method returns an integer value to report one of 4 cases:
+            <list type="definition">
+                <item>
+                    <term>-2</term>
+                    <description>-The room already contains the user.</description>
+                </item>
+                <item>
+                    <term>-1</term>
+                    <description>-The room does not exist.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The user does not exist.</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The user was successfully added to the room.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomRemoveUser(System.UInt32,System.String)">
+            <summary>
+            The RoomRemoveUser method attempts to remove a user to a room. Return values: (-3) User is not in the room; (-2) Room deletion attempt failed [no more users in room]; 
+            (-1) Room does not exist; (0) User does not exist; (1) User removed and owner still is in room; (2) User removed and the room was destroyed [no more users in room];
+            (3) Owner was removed and an error occurred during owner change; (4) Owner removed and owner successfully changed.
+            </summary>
+            <param name="roomNumber">The room number.</param>
+            <param name="name">The name of the user.</param>
+            <returns>
+            The method returns an integer value to report one of 8 cases:
+            <list type="definition">
+                <item>
+                    <term>-3</term>
+                    <description>-The user is not in the room.</description>
+                </item>
+                <item>
+                    <term>-2</term>
+                    <description>-The last user was removed from the room and subsequent room deletion failed.</description>
+                </item>
+                <item>
+                    <term>-1</term>
+                    <description>-The room does not exist.</description>
+                </item>
+                <item>
+                    <term>0</term>
+                    <description>-The user does not exist.</description>
+                </item>
+                <item>
+                    <term>1</term>
+                    <description>-The user was successfully removed from the room and the owner remains in the room.</description>
+                </item>
+                <item>
+                    <term>2</term>
+                    <description>-The user was successfully removed from the room and the room was successfully destroyed.</description>
+                </item>
+                <item>
+                    <term>3</term>
+                    <description>-The owner was removed from the room and an ownership transfer failed.</description>
+                </item>
+                <item>
+                    <term>4</term>
+                    <description>-The owner was removed from the room and a new owner was selected successfully.</description>
+                </item>
+            </list>
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomUserList(System.UInt32)">
+            <summary>
+            The RoomUserList method returns a string[] containing the names of all users in a particular room.
+            </summary>
+            <param name="roomNumber">The room number.</param>
+            <returns>
+            The method returns a string[] containing the names of all users in a particular room.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.GetLobbyUserList">
+            <summary>
+            The GetLobbyUserList method returns a string[] containing the names of all users in the lobby.
+            </summary>
+            <returns>
+            The method returns a string[] containing the names of all users in the lobby.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomList">
+            <summary>
+            The RoomList method returns a string[] containing the names of all rooms active in the Redis database.
+            </summary>
+            <returns>
+            The method returns a string[] containing the names of all rooms active in the Redis database.
+            </returns>
+        </member>
+        <member name="M:MikRedisDB.RedisDBController.RoomSizeRankList(System.Int32)">
+            <summary>
+            The RoomSizeRankList method returns a Dictionary containing the top-n ranking list of the top n-ranked rooms in the database in terms of their population.
+            </summary>
+            <param name="topNumber">The top-n number of rank entries desired to be examined.</param>
+            <returns>
+            This method returns a Dictionary containing the top-n ranking list of the top n-ranked rooms in the database in terms of their population.
+            </returns>
+        </member>
+    </members>
+</doc>

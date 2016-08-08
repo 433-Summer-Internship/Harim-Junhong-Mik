@@ -73,5 +73,15 @@ namespace def
         {
             Console.WriteLine(str);
         }
+
+        public static void HeartBeat(object sender, ElapsedEventArgs events, List<Client> clients)
+        {
+
+        }
+
+        public static void HeartBeat(object sender, ElapsedEventArgs events, Socket clients)
+        {
+
+        }
     }
 }
